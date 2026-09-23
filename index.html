@@ -36,7 +36,16 @@ customElements.whenDefined('model-viewer').then(MV => {
 <!-- static render of the can, on screen within the first second while the 3D
      loads; crossfades to the live model in revealCan() -->
 <link rel="preload" href="assets/can_poster_coke.webp" as="image" fetchpriority="high">
-<script>document.documentElement.classList.add('fonts-pending');</script>
+<script>
+document.documentElement.classList.add('fonts-pending');
+// theme + language before first paint; default dark + English, choice remembered
+(function () {
+    var d = document.documentElement, t = null, l = null;
+    try { t = localStorage.getItem('cw-theme'); l = localStorage.getItem('cw-lang'); } catch (e) {}
+    d.setAttribute('data-theme', t === 'light' ? 'light' : 'dark');
+    d.setAttribute('lang', l === 'id' ? 'id' : 'en');
+})();
+</script>
 <style>
 /* FOUT: Galada 22% lebih sempit daripada font cursive cadangan, jadi begitu
    font asli tiba headline selebar 192px melompat ~180px dalam satu frame.
@@ -607,6 +616,89 @@ body.blue-theme {
     pointer-events: none;
 }
 
+/* ================= HEADER CONTROLS ================= */
+.hdr-right { display: flex; align-items: center; gap: 0.6rem; }
+.seg {
+    display: inline-flex; border-radius: 100px; overflow: hidden;
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+}
+.seg button, .theme-btn {
+    font: 600 0.72rem/1 'Manrope', sans-serif; letter-spacing: 0.04em;
+    color: var(--muted-color); background: transparent; border: 0; cursor: pointer;
+    padding: 0.62rem 0.8rem;
+}
+.seg button[aria-pressed="true"] { background: #fbcfe8; color: #011d17; }
+.theme-btn {
+    width: 38px; height: 38px; padding: 0; border-radius: 50%; display: inline-grid; place-items: center;
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+}
+.theme-btn svg { width: 16px; height: 16px; }
+.seg button:focus-visible, .theme-btn:focus-visible { outline: 2px solid #fbcfe8; outline-offset: 2px; }
+[data-theme="dark"] .i-sun, [data-theme="light"] .i-moon { display: none; }
+/* Phones: the five nav links (all "#" placeholders) plus Contact made the
+   header 572px wide, so a 375px phone rendered the whole page zoomed out.
+   Keep the logo and the theme/language controls. */
+@media (max-width: 760px) {
+    .contact-btn, .nav { display: none; }
+}
+
+/* ================= LIGHT THEME (proposal) =================
+   The brand worlds stay: Coca-Cola red, Pepsi blue. Light only moves the
+   neutrals - background to a brand-tinted white, text to dark, glass to
+   frosted white. Every rule is scoped to [data-theme="light"], so the dark
+   default is exactly what it was. */
+[data-theme="light"] {
+    --text-color: #1d0a0c;
+    --muted-color: rgba(29, 10, 12, 0.72);
+    --glass-bg: rgba(255, 255, 255, 0.55);
+    --glass-border: rgba(29, 10, 12, 0.12);
+    --title-color: #c0121f;
+    --pepsi-accent: #0a64b8;
+}
+[data-theme="light"] body { --bg-inner: #fffaf9; --bg-mid: #f6dedb; --bg-outer: #e4aca7; }
+[data-theme="light"] body.blue-theme {
+    --bg-inner: #f7fbff; --bg-mid: #d9e8f8; --bg-outer: #9dc0e8;
+    --text-color: #06172b; --muted-color: rgba(6, 23, 43, 0.72); --title-color: #0a4f9c;
+    --glass-border: rgba(6, 23, 43, 0.12);
+}
+[data-theme="light"] .main-title, [data-theme="light"] .side-title { color: var(--title-color); }
+[data-theme="light"] .nav.glass {
+    background: rgba(255, 255, 255, 0.6); border-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+}
+[data-theme="light"] .card:hover { background: rgba(255, 255, 255, 0.75); border-color: rgba(0, 0, 0, 0.18); }
+[data-theme="light"] .card.active { border-color: #e48bb8; }
+[data-theme="light"] .card img { filter: drop-shadow(0 18px 28px rgba(60, 10, 14, 0.28)); }
+[data-theme="light"] .nav-arrow { color: var(--text-color); }
+[data-theme="light"] .nav-arrow:hover { background: rgba(255, 255, 255, 0.8); }
+[data-theme="light"] .story--coke {
+    background: linear-gradient(180deg, rgba(255, 246, 244, 0) 0%, rgba(255, 246, 244, 0.5) 30%,
+        rgba(255, 249, 248, 0.92) 68%, rgba(255, 251, 250, 0.98) 100%);
+}
+[data-theme="light"] .story--pepsi {
+    background: linear-gradient(180deg, rgba(244, 249, 255, 0) 0%, rgba(244, 249, 255, 0.5) 30%,
+        rgba(246, 250, 255, 0.92) 68%, rgba(250, 252, 255, 0.98) 100%);
+}
+[data-theme="light"] .story-mark { color: rgba(0, 0, 0, 0.05); }
+[data-theme="light"] .story::before { background: none; }
+[data-theme="light"] .eyebrow { color: var(--muted-color); }
+[data-theme="light"] .fact { background: rgba(255, 255, 255, 0.6); }
+[data-theme="light"] .fact-k::after { background: currentColor; opacity: 0.5; }
+[data-theme="light"] .story--coke .fact-k, [data-theme="light"] .story--coke .story-head { color: #b3101c; }
+[data-theme="light"] .tl-item { border-top-color: rgba(0, 0, 0, 0.14); }
+[data-theme="light"] .tl-item::before { background: #b3101c; }
+[data-theme="light"] .story--pepsi .eyebrow,
+[data-theme="light"] .story--pepsi .fact-k { color: var(--pepsi-accent); }
+[data-theme="light"] .story--pepsi .fact-k::after,
+[data-theme="light"] .story--pepsi .tl-item::before { background: var(--pepsi-accent); opacity: 1; }
+[data-theme="light"] .story--pepsi .fact { border-color: rgba(10, 100, 184, 0.3); }
+[data-theme="light"] .story--pepsi .tl-item { border-top-color: rgba(10, 100, 184, 0.4); }
+[data-theme="light"] .story--coke .motif .ribbon path { fill: rgba(192, 18, 31, 0.9); }
+[data-theme="light"] .pulse g { stroke: var(--pepsi-accent); }
+[data-theme="light"] .colophon { border-top-color: rgba(0, 0, 0, 0.1); color: rgba(0, 0, 0, 0.5); }
+
 /* ================= SESI CERITA ================= */
 /* Dua bahasa desain, ditukar lewat kelas pada <section>:
    Coca-Cola  - merah, skrip, pita dinamis, nada warisan
@@ -822,13 +914,23 @@ body.blue-theme {
         <span>Cola Wars</span>
     </div>
     <nav class="nav glass">
-        <a href="#" class="nav-item active">Home</a>
-        <a href="#" class="nav-item">Ingredients</a>
-        <a href="#" class="nav-item">Taste</a>
-        <a href="#" class="nav-item">Eco</a>
-        <a href="#" class="nav-item">Reviews</a>
+        <a href="#" class="nav-item active" data-i18n="navHome">Home</a>
+        <a href="#" class="nav-item" data-i18n="navIngr">Ingredients</a>
+        <a href="#" class="nav-item" data-i18n="navTaste">Taste</a>
+        <a href="#" class="nav-item" data-i18n="navEco">Eco</a>
+        <a href="#" class="nav-item" data-i18n="navReviews">Reviews</a>
     </nav>
-    <button class="contact-btn">Contact Us</button>
+    <div class="hdr-right">
+        <div class="seg" role="group" aria-label="Language" data-i18n-aria="lang">
+            <button type="button" data-lang="en" aria-pressed="true">EN</button>
+            <button type="button" data-lang="id" aria-pressed="false">ID</button>
+        </div>
+        <button type="button" class="theme-btn" id="themeBtn" aria-label="Switch light/dark theme" data-i18n-aria="theme">
+            <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+            <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        </button>
+        <button class="contact-btn" data-i18n="contact">Contact Us</button>
+    </div>
 </header>
 
 <main class="hero">
@@ -843,7 +945,7 @@ body.blue-theme {
             <p class="description" id="lede">Mixed by John Pemberton and first poured at Jacobs&rsquo; Pharmacy, Atlanta, on 8 May 1886 &mdash; five cents a glass. It sold about nine glasses a day that first year.</p>
             <div class="cta-group">
                 <button class="primary-btn">
-                    Shop Now
+                    <span data-i18n="shop">Shop Now</span>
                     <span class="plus-icon">+</span>
                 </button>
             </div>
@@ -876,7 +978,7 @@ body.blue-theme {
                  di tengah layar, jadi setiap scroll halaman terjadi di atasnya dan
                  menggeser kamera - kaleng menyusut sendiri setelah pengguna
                  menggulir. Orbitnya toh sudah kita setel per-frame dari kursor. -->
-            <model-viewer id="product-model" src="assets/deit_soda2.glb" alt="Soda can 3D model"
+            <model-viewer id="product-model" src="assets/deit_soda2.glb" alt="Soda can 3D model" data-i18n-alt="canAlt"
                 shadow-intensity="0" environment-image="assets/env_cold.png" exposure="1.35"
                 interaction-prompt="none" camera-orbit="0deg 90deg 850%" field-of-view="14deg"
                 class="main-product-3d">
@@ -911,8 +1013,8 @@ body.blue-theme {
                     </div>
                 </div>
                 <div class="carousel-nav">
-                    <button class="nav-arrow">←</button>
-                    <button class="nav-arrow">→</button>
+                    <button class="nav-arrow" aria-label="Previous brand" data-i18n-aria="prev">←</button>
+                    <button class="nav-arrow" aria-label="Next brand" data-i18n-aria="next">→</button>
                 </div>
             </div>
             <h2 class="side-title large-animation-1" id="title-side">Nine Glasses<br>A Day</h2>
@@ -952,7 +1054,7 @@ body.blue-theme {
             </svg>
         </div>
 
-        <p class="colophon">
+        <p class="colophon" data-i18n-html="colophon">
             CONCEPT / DESIGN EXERCISE &middot; NOT AFFILIATED WITH THE COCA-COLA COMPANY OR PEPSICO.<br>
             Historical detail sourced from The Coca-Cola Company, the Library of Congress,
             the N.C. Department of Natural &amp; Cultural Resources and PepsiCo Design.
@@ -974,7 +1076,7 @@ body.blue-theme {
    tahun pertama. Pepsi diracik Caleb Bradham di New Bern, North Carolina,
    1893, dengan nama "Brad's Drink", dan baru bernama Pepsi-Cola pada
    28 Agustus 1898. */
-const COPY = {
+const COPY_EN = {
     classic: {
         main: 'Since<br>1886',
         side: 'Nine Glasses<br>A Day',
@@ -1017,6 +1119,73 @@ const COPY = {
     }
 };
 
+/* Bahasa Indonesia. Fakta dan tanggal sama persis dengan versi Inggris; slogan
+   merek ("THE REAL THING", "UNAPOLOGETICALLY PEPSI") sengaja tidak diterjemahkan. */
+const COPY_ID = {
+    classic: {
+        main: 'Sejak<br>1886',
+        side: 'Sembilan Gelas<br>Sehari',
+        lede: "Diracik John Pemberton dan pertama dituang di Jacobs' Pharmacy, Atlanta, pada 8 Mei 1886 — lima sen segelas. Tahun pertamanya laku sekitar sembilan gelas sehari.",
+        badgeTitle: 'PERTAMA DITUANG',
+        badgeSub: 'ATLANTA, GEORGIA · 1886',
+        eyebrow: 'THE REAL THING. UNTUK SEMUA ORANG.',
+        head: 'Sejak 1886, rasa kebersamaan yang tak tertukar.',
+        facts: [
+            ['1886', 'Tahun sirupnya pertama diracik dan dijual'],
+            ['5¢', 'Harga gelas pertama di soda fountain'],
+            ['9', 'Gelas terjual per hari sepanjang tahun pertama']
+        ],
+        timeline: [
+            ['1886', 'John Stith Pemberton membawa sirupnya ke Jacobs’ Pharmacy di pusat kota Atlanta.'],
+            ['1886', 'Pemegang buku Frank M. Robinson menamai minuman itu dan menulis logo skrip yang masih dipakai hingga kini.'],
+            ['1892', 'Asa Candler mendirikan The Coca-Cola Company di Georgia.'],
+            ['1915', 'Botol contour lahir — siluet yang kemudian dilindungi sebagai merek dagang.']
+        ]
+    },
+    blue: {
+        main: 'Sejak<br>1893',
+        side: "Dulu Bernama<br>Brad's Drink",
+        lede: "Caleb Bradham menyajikannya dari soda fountain apoteknya di New Bern pada 1893 dengan nama “Brad's Drink”. Nama Pepsi-Cola baru dipakai pada 28 Agustus 1898.",
+        badgeTitle: 'PERTAMA DITUANG',
+        badgeSub: 'NEW BERN, N.C. · 1893',
+        eyebrow: 'UNAPOLOGETICALLY PEPSI',
+        head: 'Lahir di balik meja apotek. Dibangun ulang untuk abad berikutnya.',
+        facts: [
+            ['1893', 'Pertama disajikan sebagai “Brad’s Drink” di New Bern, North Carolina'],
+            ['1898', 'Berganti nama menjadi Pepsi-Cola pada 28 Agustus, dari pepsin dan biji kola'],
+            ['2023', 'Identitas dibangun ulang dengan biru elektrik, hitam, dan motif pulse']
+        ],
+        timeline: [
+            ['1893', 'Apoteker Caleb Bradham menyajikan minuman berkarbonasi racikannya dari soda fountain toko.'],
+            ['1898', 'Minuman itu berganti nama menjadi Pepsi-Cola pada 28 Agustus.'],
+            ['1902', 'Bradham mendirikan Pepsi-Cola Company berdasarkan hukum North Carolina.'],
+            ['2023', 'Identitas ulang tahun ke-125 mengembalikan wordmark hitam di dalam globe.']
+        ]
+    }
+};
+
+/* Static interface strings. The English values are what the HTML already
+   says, so an English visitor never sees text change after load. */
+const UI = {
+    en: {
+        navHome: 'Home', navIngr: 'Ingredients', navTaste: 'Taste', navEco: 'Eco', navReviews: 'Reviews',
+        contact: 'Contact Us', shop: 'Shop Now', prev: 'Previous brand', next: 'Next brand',
+        canAlt: 'Soda can 3D model', lang: 'Language', theme: 'Switch light/dark theme',
+        colophon: 'CONCEPT / DESIGN EXERCISE &middot; NOT AFFILIATED WITH THE COCA-COLA COMPANY OR PEPSICO.<br>Historical detail sourced from The Coca-Cola Company, the Library of Congress, the N.C. Department of Natural &amp; Cultural Resources and PepsiCo Design.',
+        desc: 'Two pharmacists, seven years apart. A 3D concept piece.'
+    },
+    id: {
+        navHome: 'Beranda', navIngr: 'Bahan', navTaste: 'Rasa', navEco: 'Eko', navReviews: 'Ulasan',
+        contact: 'Hubungi Kami', shop: 'Beli Sekarang', prev: 'Merek sebelumnya', next: 'Merek berikutnya',
+        canAlt: 'Model 3D kaleng soda', lang: 'Bahasa', theme: 'Ganti tema terang/gelap',
+        colophon: 'KONSEP / LATIHAN DESAIN &middot; TIDAK BERAFILIASI DENGAN THE COCA-COLA COMPANY MAUPUN PEPSICO.<br>Detail sejarah bersumber dari The Coca-Cola Company, Library of Congress, N.C. Department of Natural &amp; Cultural Resources, dan PepsiCo Design.',
+        desc: 'Dua apoteker, terpaut tujuh tahun. Karya konsep 3D.'
+    }
+};
+let LANG = document.documentElement.lang === 'id' ? 'id' : 'en';
+let currentFlavor = 'classic';
+const copyFor = flavor => (LANG === 'id' ? COPY_ID : COPY_EN)[flavor];
+
 /* Jalankan pergantian isi di tengah animasi, bukan mendadak: teks keluar
    (naik + buram), isinya ditukar saat tak terlihat, lalu masuk dari bawah.
    Berjenjang 38ms supaya tidak semua bergerak serempak. */
@@ -1054,7 +1223,7 @@ function swapText(els, mutate) {
 }
 
 function applyCopy(flavor) {
-    const c = COPY[flavor];
+    const c = copyFor(flavor);
     document.getElementById('title-main').innerHTML = c.main;
     document.getElementById('title-side').innerHTML = c.side;
     document.getElementById('lede').textContent = c.lede;
@@ -1206,15 +1375,14 @@ cards.forEach(card => {
 async function switchFlavor(flavor) {
     if (isSwitching) return;
     isSwitching = true;
+    currentFlavor = flavor;
     const body = document.body;
     const berries = document.querySelectorAll('.berry');
     const heroCenter = document.querySelector('.hero-center');
     animateCopy(flavor);
 
     // 1. Background Animation
-    const targetColors = flavor === 'blue' ?
-        { inner: '#0b4f8a', mid: '#04294e', outer: '#010c14' } :
-        { inner: '#c0121f', mid: '#5d0710', outer: '#160204' };
+    const targetColors = bgPalette(flavor);
 
     gsap.to(body, {
         '--bg-inner': targetColors.inner,
@@ -1503,6 +1671,48 @@ window.addEventListener('scroll', fadeHeroOnScroll, { passive: true });
     ])).then(done, done);
     setTimeout(done, 2000);
 })();
+
+/* ================= THEME + LANGUAGE ================= */
+// The brand background is animated by GSAP as inline custom properties, which
+// beat any stylesheet, so the palette per theme x brand lives here too.
+const BG = {
+    dark:  { classic: { inner: '#c0121f', mid: '#5d0710', outer: '#160204' },
+             blue:    { inner: '#0b4f8a', mid: '#04294e', outer: '#010c14' } },
+    light: { classic: { inner: '#fffaf9', mid: '#f6dedb', outer: '#e4aca7' },
+             blue:    { inner: '#f7fbff', mid: '#d9e8f8', outer: '#9dc0e8' } }
+};
+function bgPalette(flavor) {
+    const theme = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+    return BG[theme][flavor === 'blue' ? 'blue' : 'classic'];
+}
+document.getElementById('themeBtn').addEventListener('click', () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem('cw-theme', next); } catch (e) {}
+    const c = bgPalette(currentFlavor);
+    gsap.to(document.body, { '--bg-inner': c.inner, '--bg-mid': c.mid, '--bg-outer': c.outer, duration: 0.6, ease: 'power2.inOut' });
+});
+
+function applyUI() {
+    const t = UI[LANG];
+    document.documentElement.lang = LANG;
+    document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t[el.dataset.i18n]; });
+    document.querySelectorAll('[data-i18n-html]').forEach(el => { el.innerHTML = t[el.dataset.i18nHtml]; });
+    document.querySelectorAll('[data-i18n-aria]').forEach(el => el.setAttribute('aria-label', t[el.dataset.i18nAria]));
+    document.querySelectorAll('[data-i18n-alt]').forEach(el => el.setAttribute('alt', t[el.dataset.i18nAlt]));
+    document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === LANG)));
+    const d = document.querySelector('meta[name="description"]');
+    if (d) d.setAttribute('content', t.desc);
+}
+document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => {
+    if (b.dataset.lang === LANG) return;
+    LANG = b.dataset.lang;
+    try { localStorage.setItem('cw-lang', LANG); } catch (e) {}
+    applyUI();
+    animateCopy(currentFlavor);
+}));
+// A returning Indonesian reader: swap before the first paint, no animation.
+if (LANG === 'id') { applyUI(); applyCopy('classic'); }
 
 // Bubbles Generator using bubble.png
 const bubblesContainer = document.getElementById('bubbles-container');
