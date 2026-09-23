@@ -7,10 +7,35 @@
 <meta name="description" content="Two pharmacists, seven years apart. A 3D concept piece.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Inter:wght@400;500&family=Manrope:wght@400;700&family=Galada&display=swap" rel="stylesheet">
+<!-- Google Fonts CSS must NOT block the parser: the sync scripts below wait for
+     every pending stylesheet, and on a bad route to googleapis this CSS took
+     10.9 s (measured 23 Sep 2026), holding the whole page - can included - blank.
+     media="print" loads it without blocking; .fonts-pending still hides the
+     display type until the real fonts are in (see revealDisplayType). -->
+<link id="gfonts" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Inter:wght@400;500&family=Manrope:wght@400;700&family=Galada&display=swap" media="print" onload="this.media='all';window.__gfonts=1" onerror="window.__gfonts=1">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Inter:wght@400;500&family=Manrope:wght@400;700&family=Galada&display=swap"></noscript>
 <!-- GSAP dilayani lokal: sumber cdnjs pada prompt asli diblokir jaringan ini -->
 <script src="assets/gsap.min.js"></script>
-<script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+<!-- model-viewer pinned and served locally: the unversioned unpkg URL silently
+     followed every new release (4.3.1 on 23 Sep 2026) -->
+<script type="module" src="assets/model-viewer-4.3.1.min.js"></script>
+<!-- Draco decoder served locally too. It used to come from www.gstatic.com; on
+     a stalled route to Google (seen 23 Sep 2026) it never arrived, the GLB could
+     not be decoded, and the can never appeared at all. -->
+<script type="module">
+customElements.whenDefined('model-viewer').then(MV => {
+    MV.dracoDecoderLocation = new URL('assets/draco/', location.href).href;
+});
+</script>
+<!-- the can's critical path, fetched while the parser is still in <head>:
+     model, then only the ACTIVE brand's label + the normal/MR maps. Pepsi's
+     label and props load after the can is on screen. -->
+<link rel="preload" href="assets/deit_soda2.glb" as="fetch" crossorigin="anonymous" fetchpriority="high">
+<link rel="preload" href="assets/can_coke.webp" as="image" crossorigin="anonymous" fetchpriority="high">
+<link rel="preload" href="assets/can_normal.webp" as="image" crossorigin="anonymous">
+<!-- static render of the can, on screen within the first second while the 3D
+     loads; crossfades to the live model in revealCan() -->
+<link rel="preload" href="assets/can_poster_coke.webp" as="image" fetchpriority="high">
 <script>document.documentElement.classList.add('fonts-pending');</script>
 <style>
 /* FOUT: Galada 22% lebih sempit daripada font cursive cadangan, jadi begitu
@@ -315,6 +340,24 @@ body.blue-theme {
 .award-subtitle { font-size: 0.85rem; font-weight: 600; }
 
 .hero-center.ready { opacity: 1; }
+
+/* Poster: a transparent render of the can (tools: see README), in the SAME box
+   as the model (.main-product-3d) and the same float, so the crossfade to 3D
+   lands on the same pixels. Scaled by height (auto 100%), like the model's
+   vertical field of view - "contain" shrank it to a third on a phone. */
+.can-poster-wrap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+    animation: float 6s ease-in-out infinite;
+    transition: opacity 800ms ease;
+}
+.can-poster { background: url(assets/can_poster_coke.webp) center / auto 100% no-repeat; }
+.can-poster-wrap.gone { opacity: 0; }
 
 .hero-center {
     display: flex;
@@ -819,11 +862,12 @@ body.blue-theme {
         </div>
 
         <div class="berries-container-bg">
-            <img class="berry b7" src="assets/bottle_coke.png" alt="">
-            <img class="berry b8" src="assets/bottle_coke.png" alt="">
-            <img class="berry b9" src="assets/bottle_coke.png" alt="">
+            <img class="berry b7" src="assets/bottle_coke.webp" alt="">
+            <img class="berry b8" src="assets/bottle_coke.webp" alt="">
+            <img class="berry b9" src="assets/bottle_coke.webp" alt="">
         </div>
 
+        <div class="can-poster-wrap" aria-hidden="true"><div class="main-product-3d can-poster"></div></div>
         <div class="hero-center">
             <!-- environment-image kustom, bukan preset "neutral": butiran embun butuh
                  tepi cahaya dingin untuk dipantulkan, kalau tidak ia terbaca sebagai
@@ -840,12 +884,12 @@ body.blue-theme {
         </div>
 
         <div class="berries-container">
-            <img class="berry b1" src="assets/bottle_coke.png" alt="">
-            <img class="berry b2" src="assets/bottle_coke.png" alt="">
-            <img class="berry b3" src="assets/bottle_coke.png" alt="">
-            <img class="berry b4" src="assets/bottle_coke.png" alt="">
-            <img class="berry b5" src="assets/bottle_coke.png" alt="">
-            <img class="berry b6" src="assets/bottle_coke.png" alt="">
+            <img class="berry b1" src="assets/bottle_coke.webp" alt="">
+            <img class="berry b2" src="assets/bottle_coke.webp" alt="">
+            <img class="berry b3" src="assets/bottle_coke.webp" alt="">
+            <img class="berry b4" src="assets/bottle_coke.webp" alt="">
+            <img class="berry b5" src="assets/bottle_coke.webp" alt="">
+            <img class="berry b6" src="assets/bottle_coke.webp" alt="">
         </div>
 
         <div class="hero-right">
@@ -922,10 +966,6 @@ body.blue-theme {
         <feDisplacementMap in="SourceGraphic" in2="noise" scale="80" xChannelSelector="R" yChannelSelector="G" />
     </filter>
 </svg>
-<div style="display: none;">
-    <!-- Preload prop art so the flavor switch never flashes an empty frame -->
-    <img src="assets/bottle_coke.png" alt=""><img src="assets/globe_pepsi.png" alt="">
-</div>
 
 <script>
 /* Salinan teks per merek. Angka & tanggal diverifikasi lewat riset:
@@ -1078,6 +1118,11 @@ function revealCan() {
     heroRevealed = true;
     const hc = document.querySelector('.hero-center');
     if (hc) hc.classList.add('ready');
+    const pw = document.querySelector('.can-poster-wrap');
+    if (pw) {
+        pw.classList.add('gone');
+        setTimeout(() => { pw.style.display = 'none'; }, 900);
+    }
 }
 // Jaring pengaman hanya untuk kasus model TIDAK PERNAH termuat - saat itu tidak
 // ada apa pun yang bisa berkedip. Kalau modelnya sudah ada tapi tekstur belum
@@ -1089,17 +1134,15 @@ setTimeout(function safetyReveal() {
     else setTimeout(revealCan, 6000);   // batas akhir mutlak
 }, 8000);
 
-// Preload textures & Warm up shaders
+// Critical path: the can appears as soon as the ACTIVE brand is textured.
+// It used to wait for all four maps, Pepsi's label included (~1.8 MB), before
+// showing anything; now it waits for Coca-Cola + MR + normal (~0.7 MB), and
+// Pepsi loads behind it (loadSecondBrand).
 modelViewer.addEventListener('load', async () => {
     try {
-        // Keempat tekstur (~1 MB gabungan setelah dikompres) dimuat PARALEL,
-        // bukan berurutan - await satu-satu dulu membuat waktu tunggu menumpuk
-        // linear (fetch A selesai baru fetch B mulai) padahal browser bisa
-        // menembak semuanya sekaligus lewat koneksi terpisah.
         let mrTexture, nrmTexture;
-        [blueTexture, greenTexture, mrTexture, nrmTexture] = await Promise.all([
-            modelViewer.createTexture('assets/can_pepsi.jpg'),
-            modelViewer.createTexture('assets/can_coke.jpg'),
+        [greenTexture, mrTexture, nrmTexture] = await Promise.all([
+            modelViewer.createTexture('assets/can_coke.webp'),
             // Teks "ORIGINAL DO BRASIL" + tabel nutrisi Guarana ikut dipanggang ke
             // peta metallicRoughness bawaan model, jadi ia membayang lewat kilap
             // berapa pun base color yang dipasang. Diganti versi rata.
@@ -1107,26 +1150,17 @@ modelViewer.addEventListener('load', async () => {
             // Normal map berisi relief butiran embun. Base color saja tidak cukup:
             // tanpa relief, butiran tidak memantulkan apa pun dan terbaca sebagai
             // noda. Peta bawaan GLB datar, jadi ruangnya memang kosong.
-            modelViewer.createTexture('assets/can_normal.png')
+            // WebP LOSSLESS - lossy merusak arah normal (lihat make_web_assets.py).
+            modelViewer.createTexture('assets/can_normal.webp')
         ]);
         if (modelViewer.model) {
             modelViewer.model.materials.forEach(m => {
                 const mr = m.pbrMetallicRoughness.metallicRoughnessTexture;
                 if (mr) mr.setTexture(mrTexture);
                 if (m.normalTexture) m.normalTexture.setTexture(nrmTexture);
+                const bc = m.pbrMetallicRoughness.baseColorTexture;
+                if (bc) bc.setTexture(greenTexture);
             });
-        }
-
-        // Shader Warm-up: Briefly apply textures to compile shaders
-        if (modelViewer.model) {
-            const material = modelViewer.model.materials[0];
-            if (material && material.pbrMetallicRoughness.baseColorTexture) {
-                // Apply blue
-                material.pbrMetallicRoughness.baseColorTexture.setTexture(blueTexture);
-                await new Promise(r => requestAnimationFrame(r));
-                // Apply green back
-                material.pbrMetallicRoughness.baseColorTexture.setTexture(greenTexture);
-            }
         }
     } catch (e) {
         console.error("Texture preload failed", e);
@@ -1134,8 +1168,30 @@ modelViewer.addEventListener('load', async () => {
         // satu frame lagi supaya tekstur Coca-Cola benar-benar sudah tergambar
         requestAnimationFrame(() => requestAnimationFrame(revealCan));
         setTimeout(revealCan, 400);   // rAF beku saat tab di latar
+        secondBrand = loadSecondBrand();
     }
 });
+
+// Pepsi's label and props, fetched once the can is already on screen.
+// Warm-up: the GetLayers recipe flashed the Pepsi label onto the can for one
+// frame so the first flavour switch would not stutter on a texture upload.
+// Here the Pepsi texture is uploaded through the EMISSIVE slot instead, whose
+// factor is black (0,0,0) in this model, so the GPU receives it while the can
+// looks exactly the same - no blue frame, and no wait before first paint.
+let secondBrand = null;   // Promise, set once the can is revealed
+async function loadSecondBrand() {
+    try {
+        new Image().src = 'assets/globe_pepsi.webp';
+        blueTexture = await modelViewer.createTexture('assets/can_pepsi.webp');
+        const m = modelViewer.model && modelViewer.model.materials[0];
+        if (m && m.emissiveTexture && isBlack(m.emissiveFactor)) {
+            m.emissiveTexture.setTexture(blueTexture);
+        }
+    } catch (e) {
+        console.error("Second brand preload failed", e);
+    }
+}
+function isBlack(f) { return !f || (f[0] === 0 && f[1] === 0 && f[2] === 0); }
 
 cards.forEach(card => {
     card.addEventListener('click', () => {
@@ -1183,6 +1239,8 @@ async function switchFlavor(flavor) {
             // SWAP at peak
             if (flavor === 'blue') {
                 body.classList.add('blue-theme');
+                // clicked before Pepsi's label arrived: wait for it at the blur peak
+                if (!blueTexture && secondBrand) await secondBrand;
                 if (modelViewer.model && blueTexture) {
                     modelViewer.model.materials.forEach(material => {
                         if (material.pbrMetallicRoughness.baseColorTexture) {
@@ -1251,7 +1309,7 @@ async function switchFlavor(flavor) {
             duration: 0.5,
             ease: "power2.in",
             onComplete: () => {
-                berry.src = flavor === 'blue' ? 'assets/globe_pepsi.png' : 'assets/bottle_coke.png';
+                berry.src = flavor === 'blue' ? 'assets/globe_pepsi.webp' : 'assets/bottle_coke.webp';
                 heroCenter.style.zIndex = 50;
             }
         })
@@ -1406,6 +1464,7 @@ animate();
 // Kaleng & properti dipasang position:fixed oleh template, jadi tanpa ini
 // mereka menempel di layar dan menutupi sesi cerita saat digulir.
 const heroLayers = [document.querySelector('.hero-center'),
+                    document.querySelector('.can-poster-wrap'),
                     document.getElementById('bubbles-container'),
                     berriesFG, berriesBG, leavesBG];
 function fadeHeroOnScroll() {
@@ -1413,6 +1472,10 @@ function fadeHeroOnScroll() {
     heroLayers.forEach(el => {
         if (!el) return;
         const isCan = el.classList && el.classList.contains('hero-center');
+        if (el.classList && el.classList.contains('can-poster-wrap')) {
+            if (!heroRevealed) el.style.opacity = String(1 - t);
+            return;
+        }
         if (isCan && !heroRevealed) { el.style.opacity = '0'; return; }
         if (t <= 0) el.style.removeProperty('opacity');   // biarkan kelas .ready bekerja
         else el.style.opacity = String(1 - t);
@@ -1424,12 +1487,21 @@ window.addEventListener('scroll', fadeHeroOnScroll, { passive: true });
 // teks tidak pernah tersangkut tak terlihat kalau Google Fonts gagal.
 (function revealDisplayType() {
     const done = () => document.documentElement.classList.remove('fonts-pending');
-    if (document.fonts && document.fonts.ready) {
-        document.fonts.ready.then(done);
-        setTimeout(done, 2000);
-    } else {
-        done();
-    }
+    if (!document.fonts || !document.fonts.load) { done(); return; }
+    // The font CSS is non-blocking now, so fonts.ready alone could resolve
+    // before the CSS has even declared Galada. Wait for the CSS, then load the
+    // display faces explicitly.
+    const link = document.getElementById('gfonts');
+    const css = new Promise(r => {
+        if (window.__gfonts || !link) return r();
+        link.addEventListener('load', r, { once: true });
+        link.addEventListener('error', r, { once: true });
+    });
+    css.then(() => Promise.all([
+        document.fonts.load('400 1em Galada'),
+        document.fonts.load('900 1em Outfit'),
+    ])).then(done, done);
+    setTimeout(done, 2000);
 })();
 
 // Bubbles Generator using bubble.png
