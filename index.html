@@ -644,24 +644,26 @@ body.blue-theme {
     .contact-btn, .nav { display: none; }
 }
 
-/* ================= LIGHT THEME (proposal) =================
-   The brand worlds stay: Coca-Cola red, Pepsi blue. Light only moves the
-   neutrals - background to a brand-tinted white, text to dark, glass to
-   frosted white. Every rule is scoped to [data-theme="light"], so the dark
-   default is exactly what it was. */
+/* ================= LIGHT THEME =================
+   Julius' direction (24 Sep 2026): same typography as dark, set in black, on a
+   neutral ground. The brand lives in the can, the cards and the accents, not
+   in the background: warm paper for Coca-Cola, cool stone for Pepsi - close
+   enough to read as one neutral, apart enough that the switch still lands.
+   Every rule is scoped to [data-theme="light"], so the dark default is
+   exactly what it was. */
 [data-theme="light"] {
     --text-color: #1d0a0c;
     --muted-color: rgba(29, 10, 12, 0.72);
     --glass-bg: rgba(255, 255, 255, 0.55);
     --glass-border: rgba(29, 10, 12, 0.12);
-    --title-color: #c0121f;
+    --title-color: #121212;
     --pepsi-accent: #0a64b8;
 }
-[data-theme="light"] body { --bg-inner: #fffaf9; --bg-mid: #f6dedb; --bg-outer: #e4aca7; }
+[data-theme="light"] body { --bg-inner: #f7f4ef; --bg-mid: #ebe6de; --bg-outer: #d6cfc4; }
 [data-theme="light"] body.blue-theme {
-    --bg-inner: #f7fbff; --bg-mid: #d9e8f8; --bg-outer: #9dc0e8;
-    --text-color: #06172b; --muted-color: rgba(6, 23, 43, 0.72); --title-color: #0a4f9c;
-    --glass-border: rgba(6, 23, 43, 0.12);
+    --bg-inner: #f4f5f6; --bg-mid: #e5e8ea; --bg-outer: #cdd2d6;
+    --text-color: #111417; --muted-color: rgba(17, 20, 23, 0.7);
+    --glass-border: rgba(17, 20, 23, 0.12);
 }
 [data-theme="light"] .main-title, [data-theme="light"] .side-title { color: var(--title-color); }
 [data-theme="light"] .nav.glass {
@@ -670,27 +672,26 @@ body.blue-theme {
 }
 [data-theme="light"] .card:hover { background: rgba(255, 255, 255, 0.75); border-color: rgba(0, 0, 0, 0.18); }
 [data-theme="light"] .card.active { border-color: #e48bb8; }
-[data-theme="light"] .card img { filter: drop-shadow(0 18px 28px rgba(60, 10, 14, 0.28)); }
+[data-theme="light"] .card img { filter: drop-shadow(0 18px 28px rgba(20, 16, 12, 0.26)); }
 [data-theme="light"] .nav-arrow { color: var(--text-color); }
 [data-theme="light"] .nav-arrow:hover { background: rgba(255, 255, 255, 0.8); }
 [data-theme="light"] .story--coke {
-    background: linear-gradient(180deg, rgba(255, 246, 244, 0) 0%, rgba(255, 246, 244, 0.5) 30%,
-        rgba(255, 249, 248, 0.92) 68%, rgba(255, 251, 250, 0.98) 100%);
+    background: linear-gradient(180deg, rgba(247, 244, 239, 0) 0%, rgba(247, 244, 239, 0.5) 30%,
+        rgba(247, 244, 239, 0.92) 68%, rgba(249, 247, 243, 0.98) 100%);
 }
 [data-theme="light"] .story--pepsi {
-    background: linear-gradient(180deg, rgba(244, 249, 255, 0) 0%, rgba(244, 249, 255, 0.5) 30%,
-        rgba(246, 250, 255, 0.92) 68%, rgba(250, 252, 255, 0.98) 100%);
+    background: linear-gradient(180deg, rgba(244, 245, 246, 0) 0%, rgba(244, 245, 246, 0.5) 30%,
+        rgba(244, 245, 246, 0.92) 68%, rgba(247, 248, 249, 0.98) 100%);
 }
 [data-theme="light"] .story-mark { color: rgba(0, 0, 0, 0.05); }
 [data-theme="light"] .story::before { background: none; }
 [data-theme="light"] .eyebrow { color: var(--muted-color); }
 [data-theme="light"] .fact { background: rgba(255, 255, 255, 0.6); }
 [data-theme="light"] .fact-k::after { background: currentColor; opacity: 0.5; }
-[data-theme="light"] .story--coke .fact-k, [data-theme="light"] .story--coke .story-head { color: #b3101c; }
+[data-theme="light"] .story-head, [data-theme="light"] .fact-k { color: var(--title-color); }
 [data-theme="light"] .tl-item { border-top-color: rgba(0, 0, 0, 0.14); }
-[data-theme="light"] .tl-item::before { background: #b3101c; }
-[data-theme="light"] .story--pepsi .eyebrow,
-[data-theme="light"] .story--pepsi .fact-k { color: var(--pepsi-accent); }
+[data-theme="light"] .tl-item::before { background: var(--title-color); }
+[data-theme="light"] .story--pepsi .eyebrow { color: var(--pepsi-accent); }
 [data-theme="light"] .story--pepsi .fact-k::after,
 [data-theme="light"] .story--pepsi .tl-item::before { background: var(--pepsi-accent); opacity: 1; }
 [data-theme="light"] .story--pepsi .fact { border-color: rgba(10, 100, 184, 0.3); }
@@ -1678,8 +1679,8 @@ window.addEventListener('scroll', fadeHeroOnScroll, { passive: true });
 const BG = {
     dark:  { classic: { inner: '#c0121f', mid: '#5d0710', outer: '#160204' },
              blue:    { inner: '#0b4f8a', mid: '#04294e', outer: '#010c14' } },
-    light: { classic: { inner: '#fffaf9', mid: '#f6dedb', outer: '#e4aca7' },
-             blue:    { inner: '#f7fbff', mid: '#d9e8f8', outer: '#9dc0e8' } }
+    light: { classic: { inner: '#f7f4ef', mid: '#ebe6de', outer: '#d6cfc4' },
+             blue:    { inner: '#f4f5f6', mid: '#e5e8ea', outer: '#cdd2d6' } }
 };
 function bgPalette(flavor) {
     const theme = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
