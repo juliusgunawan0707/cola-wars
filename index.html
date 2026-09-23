@@ -852,14 +852,14 @@ body.blue-theme {
             <div class="product-carousel">
                 <div class="carousel-cards">
                     <div class="card active" data-flavor="classic">
-                        <img src="assets/card_coke.png" alt="Coca-Cola">
+                        <img src="assets/card_coke.webp" alt="Coca-Cola">
                         <div class="card-info">
                             <span>Coca-Cola</span>
                             <span>12 fl oz &middot; $1.99</span>
                         </div>
                     </div>
                     <div class="card" data-flavor="blue">
-                        <img src="assets/card_pepsi.png" alt="Pepsi">
+                        <img src="assets/card_pepsi.webp" alt="Pepsi">
                         <div class="card-info">
                             <span>Pepsi</span>
                             <span>12 fl oz &middot; $1.99</span>
@@ -880,7 +880,7 @@ body.blue-theme {
 <section class="story story--coke" id="story">
     <div class="story-inner">
         <div class="story-mark" id="story-mark" aria-hidden="true">1886</div>
-        <img class="story-can" id="story-can" src="assets/card_coke.png" alt="" aria-hidden="true">
+        <img class="story-can" id="story-can" src="assets/card_coke.webp" alt="" aria-hidden="true">
         <p class="eyebrow" id="story-eyebrow">THE REAL THING. FOR EVERYONE.</p>
         <h2 class="story-head" id="story-head">Since 1886, the unmistakable taste of togetherness.</h2>
 
@@ -1038,7 +1038,7 @@ function applyCopy(flavor) {
 
     document.getElementById('story-mark').textContent = c.timeline[0][0];
     document.getElementById('story-can').src =
-        flavor === 'blue' ? 'assets/card_pepsi.png' : 'assets/card_coke.png';
+        flavor === 'blue' ? 'assets/card_pepsi.webp' : 'assets/card_coke.webp';
 
     const story = document.getElementById('story');
     story.classList.toggle('story--coke', flavor === 'classic');
@@ -1092,17 +1092,23 @@ setTimeout(function safetyReveal() {
 // Preload textures & Warm up shaders
 modelViewer.addEventListener('load', async () => {
     try {
-        blueTexture = await modelViewer.createTexture('assets/can_pepsi.jpg');
-        greenTexture = await modelViewer.createTexture('assets/can_coke.jpg');
-
-        // Teks "ORIGINAL DO BRASIL" + tabel nutrisi Guarana ikut dipanggang ke
-        // peta metallicRoughness bawaan model, jadi ia membayang lewat kilap
-        // berapa pun base color yang dipasang. Diganti versi rata.
-        const mrTexture = await modelViewer.createTexture('assets/can_mr.png');
-        // Normal map berisi relief butiran embun. Base color saja tidak cukup:
-        // tanpa relief, butiran tidak memantulkan apa pun dan terbaca sebagai
-        // noda. Peta bawaan GLB datar, jadi ruangnya memang kosong.
-        const nrmTexture = await modelViewer.createTexture('assets/can_normal.png');
+        // Keempat tekstur (~1 MB gabungan setelah dikompres) dimuat PARALEL,
+        // bukan berurutan - await satu-satu dulu membuat waktu tunggu menumpuk
+        // linear (fetch A selesai baru fetch B mulai) padahal browser bisa
+        // menembak semuanya sekaligus lewat koneksi terpisah.
+        let mrTexture, nrmTexture;
+        [blueTexture, greenTexture, mrTexture, nrmTexture] = await Promise.all([
+            modelViewer.createTexture('assets/can_pepsi.jpg'),
+            modelViewer.createTexture('assets/can_coke.jpg'),
+            // Teks "ORIGINAL DO BRASIL" + tabel nutrisi Guarana ikut dipanggang ke
+            // peta metallicRoughness bawaan model, jadi ia membayang lewat kilap
+            // berapa pun base color yang dipasang. Diganti versi rata.
+            modelViewer.createTexture('assets/can_mr.png'),
+            // Normal map berisi relief butiran embun. Base color saja tidak cukup:
+            // tanpa relief, butiran tidak memantulkan apa pun dan terbaca sebagai
+            // noda. Peta bawaan GLB datar, jadi ruangnya memang kosong.
+            modelViewer.createTexture('assets/can_normal.png')
+        ]);
         if (modelViewer.model) {
             modelViewer.model.materials.forEach(m => {
                 const mr = m.pbrMetallicRoughness.metallicRoughnessTexture;
